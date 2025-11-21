@@ -4,12 +4,15 @@ export const AuthContext = createContext({
   user: null,
   setUser: () => {},
   loadUser: async () => {},
+  loading: false,
 });
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const loadUser = useCallback(async () => {
+    setLoading(true);
     try {
       const res = await fetch('http://localhost:5000/api/auth/me', {
         method: 'GET',
@@ -23,13 +26,14 @@ export const AuthProvider = ({ children }) => {
       }
       return null;
     } catch (err) {
-      // swallow network errors here; caller can decide what to do
       return null;
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, loadUser }}>
+    <AuthContext.Provider value={{ user, setUser, loadUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

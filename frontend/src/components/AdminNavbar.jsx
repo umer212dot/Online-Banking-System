@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
-const AdminNavbar = ({ user }) => {
+const AdminNavbar = () => {
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const { user } = useContext(AuthContext);
   const displayName = user?.full_name || 'Guest';
   const initials = displayName
     .split(' ')
