@@ -4,6 +4,7 @@ import Register from './pages/Register';
 import CustomerDashboard from './pages/CustomerDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import { AuthProvider } from './context/AuthContext';
+import CurrencyConverter from './pages/CurrencyConverter';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/customer/dashboard" element={<CustomerDashboard />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/currency-converter" element={<CurrencyConverter />} />
         </Routes>
       </Router>
     </AuthProvider>
