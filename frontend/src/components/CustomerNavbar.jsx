@@ -35,7 +35,9 @@ const CustomerNavbar = () => {
 
       {/* Center: Tabs (add more later) */}
       <div className="flex space-x-6">
-        <Link to="/" className="hover:text-gray-300">Home</Link>
+        <Link to="/customer/dashboard" className="hover:text-gray-300">Home</Link>
+        <Link to="/transfer" className="hover:text-gray-300">Transfer</Link>
+        <Link to="/bill-payment" className="hover:text-gray-300">Bill Payment</Link>
         <Link to="/services" className="hover:text-gray-300">Services</Link>
         <Link to="/transactions" className="hover:text-gray-300">Transactions</Link>
       </div>

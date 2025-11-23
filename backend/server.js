@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import authRoutes from './routes/authRoutes.js';
+import transferRoutes from './routes/transferRoutes.js';
+import billRoutes from './routes/billRoutes.js';
 import db from './config/db.js';
 
 dotenv.config();
@@ -15,10 +17,13 @@ app.use(cors({
   credentials: true,               // allow cookies
 }));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/transfer', transferRoutes);
+app.use('/api/bill', billRoutes);
 
 // Test route
 app.get('/', (req, res) => {

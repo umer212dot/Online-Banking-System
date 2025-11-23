@@ -1,3 +1,18 @@
+-- ============================================
+-- TO DELETE ALL Tables
+-- set foreign_key_checks = 0;
+-- drop table online_banking_system.users;
+-- drop table online_banking_system.accounts;
+-- drop table online_banking_system.biller;
+-- drop table online_banking_system.billpayments;
+-- drop table online_banking_system.externaltransfers;
+-- drop table online_banking_system.internaltransfers;
+-- drop table online_banking_system.notifications;
+-- drop table online_banking_system.supporttickets;
+-- drop table online_banking_system.ticketresponses;
+-- drop table online_banking_system.transactions;
+-- set foreign_key_checks = 1;
+-- ============================================
 -- Users table
 CREATE TABLE Users (
     user_id          BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -56,7 +71,8 @@ CREATE TABLE ExternalTransfers (
 CREATE TABLE Biller (
     biller_id        BIGINT AUTO_INCREMENT PRIMARY KEY,
     biller_name      VARCHAR(150) NOT NULL,
-    category         ENUM('electricity','gas','water','internet','other') NOT NULL
+    category         ENUM('electricity','gas','water','internet','other') NOT NULL,
+    status           ENUM('active','deactivated') NOT NULL DEFAULT 'active'
 );
 
 -- Bill payments
