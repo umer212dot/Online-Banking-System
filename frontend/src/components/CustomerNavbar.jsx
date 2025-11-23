@@ -40,6 +40,7 @@ const CustomerNavbar = () => {
         <Link to="/bill-payment" className="hover:text-gray-300">Bill Payment</Link>
         <Link to="/services" className="hover:text-gray-300">Services</Link>
         <Link to="/transactions" className="hover:text-gray-300">Transactions</Link>
+        <Link to="/currency-converter" className="hover:text-gray-300">Currency Converter</Link>
       </div>
 
       {/* Right: User dropdown */}

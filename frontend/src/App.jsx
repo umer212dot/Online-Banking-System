@@ -7,6 +7,7 @@ import Transfer from './pages/Transfer';
 import BillPayment from './pages/BillPayment';
 import BillerManagement from './pages/BillerManagement';
 import { AuthProvider } from './context/AuthContext';
+import CurrencyConverter from './pages/CurrencyConverter';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/transfer" element={<Transfer />} />
           <Route path="/bill-payment" element={<BillPayment />} />
           <Route path="/admin/billers" element={<BillerManagement />} />
+          <Route path="/currency-converter" element={<CurrencyConverter />} />
         </Routes>
       </Router>
     </AuthProvider>

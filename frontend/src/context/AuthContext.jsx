@@ -1,4 +1,4 @@
-import React, { createContext, useState, useCallback } from 'react';
+import React, { createContext, useState, useCallback, useEffect } from 'react';
 
 export const AuthContext = createContext({
   user: null,
@@ -31,6 +31,12 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     }
   }, []);
+
+  // Attempt to load user on provider mount so pages and navbars see the restored user after refresh
+  useEffect(() => {
+    // fire-and-forget; loadUser handles its own errors and loading state
+    loadUser();
+  }, [loadUser]);
 
   return (
     <AuthContext.Provider value={{ user, setUser, loadUser, loading }}>
