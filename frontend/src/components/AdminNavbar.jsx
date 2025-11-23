@@ -37,6 +37,7 @@ const AdminNavbar = () => {
       <div className="flex space-x-6">
         <Link to="/admin/dashboard" className="hover:text-gray-300">Dashboard</Link>
         <Link to="/admin/users" className="hover:text-gray-300">Users</Link>
+        <Link to="/admin/billers" className="hover:text-gray-300">Billers</Link>
         <Link to="/admin/orders" className="hover:text-gray-300">Orders</Link>
       </div>
 

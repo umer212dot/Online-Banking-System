@@ -43,10 +43,12 @@ export const registerUser = async (req, res) => {
 
 // REGISTER ADMIN (backend-only, via Postman)
 export const registerAdmin = async (req, res) => {
-  const { full_name, email, password, phone, cnic } = req.body;
+  // const { full_name, email, password, phone, cnic } = req.body;
+  const { fullName, email, password, phone, cnic } = req.body;
+
 
   // Required fields check
-  if (!full_name || !email || !password || !cnic) {
+  if (!fullName || !email || !password || !cnic) {
     return res.status(400).json({ message: 'Please fill all required fields' });
   }
 
@@ -67,7 +69,7 @@ export const registerAdmin = async (req, res) => {
     // Insert admin into database
     await db.query(
       'INSERT INTO Users (full_name, email, password_hash, phone, cnic, role, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [full_name, email, password_hash, phone || null, cnic, 'admin', 'approved'] // admin approved by default
+      [fullName, email, password_hash, phone || null, cnic, 'admin', 'approved'] // admin approved by default
     );
 
     res.status(201).json({ message: 'Admin registration successful!' });
