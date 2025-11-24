@@ -7,7 +7,8 @@ import {
   createExternalTransfer,
   getFrequentInternalRecipients,
   getFrequentExternalRecipients,
-  getTransactionDetails
+  getTransactionDetails,
+  getTransactionHistory
 } from '../controllers/transferController.js';
 
 const router = express.Router();
@@ -27,6 +28,9 @@ router.get('/frequent-external', getFrequentExternalRecipients);
 
 // Get transaction details for receipt
 router.get('/transaction/:transaction_id', getTransactionDetails);
+
+// Get transaction history with pagination
+router.get('/history', getTransactionHistory);
 
 // Create transfers
 router.post('/internal', createInternalTransfer);
