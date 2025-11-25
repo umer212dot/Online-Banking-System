@@ -10,12 +10,12 @@ const Notifications = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/notifications/all', {
+        const res = await fetch('http://localhost:5000/api/notifications', {
           credentials: 'include',
         });
         if (res.ok) {
           const data = await res.json();
-          setNotifications(data);
+          setNotifications(data.notifications || []);
         }
       } catch (err) {
         console.error('Error fetching notifications:', err);
@@ -34,7 +34,7 @@ const Notifications = () => {
       const res = await fetch(
         `http://localhost:5000/api/notifications/${notificationId}/read`,
         {
-          method: 'PUT',
+          method: 'PATCH',
           credentials: 'include',
         }
       );
@@ -54,8 +54,8 @@ const Notifications = () => {
     switch (type) {
       case 'transfer':
         return 'bg-blue-100 text-blue-800';
-      case 'payment':
-        return 'bg-green-100 text-green-800';
+      case 'system_noti':
+        return 'bg-yellow-100 text-yellow-800';
       case 'account_activity':
         return 'bg-purple-100 text-purple-800';
       default:
