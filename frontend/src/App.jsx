@@ -8,6 +8,8 @@ import BillPayment from './pages/BillPayment';
 import BillerManagement from './pages/BillerManagement';
 import { AuthProvider } from './context/AuthContext';
 import CurrencyConverter from './pages/CurrencyConverter';
+import EditProfile from './pages/EditProfile';
+import Notifications from './pages/Notifications';
 
 function App() {
   return (
@@ -23,6 +25,8 @@ function App() {
           <Route path="/bill-payment" element={<BillPayment />} />
           <Route path="/admin/billers" element={<BillerManagement />} />
           <Route path="/currency-converter" element={<CurrencyConverter />} />
+          <Route path="/edit-profile" element={<EditProfile />} />
+          <Route path="/notifications" element={<Notifications />} />
         </Routes>
       </Router>
     </AuthProvider>

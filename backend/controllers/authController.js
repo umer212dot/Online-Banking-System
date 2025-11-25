@@ -134,13 +134,76 @@ export const getCurrentUser = async (req, res) => {
     const userId = req.userId;
     if (!userId) return res.status(401).json({ message: 'Not authorized' });
 
-    const [users] = await db.query('SELECT user_id, full_name, email, role FROM Users WHERE user_id = ?', [userId]);
+    const [users] = await db.query('SELECT user_id, full_name, email, phone, role FROM Users WHERE user_id = ?', [userId]);
     const user = users[0];
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    res.json({ user: { id: user.user_id, full_name: user.full_name, email: user.email, role: user.role } });
+    res.json({ user: { id: user.user_id, full_name: user.full_name, email: user.email, phone: user.phone, role: user.role } });
   } catch (err) {
     console.error('Get current user error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// UPDATE USER PROFILE
+export const updateProfile = async (req, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) return res.status(401).json({ message: 'Not authorized' });
+
+    const { full_name, email, password, phone } = req.body;
+
+    // Check if email is being changed and if it's already taken
+    if (email) {
+      const [existingUsers] = await db.query(
+        'SELECT user_id FROM Users WHERE email = ? AND user_id != ?',
+        [email, userId]
+      );
+      if (existingUsers.length > 0) {
+        return res.status(400).json({ message: 'Email already in use' });
+      }
+    }
+
+    // Build update query dynamically based on provided fields
+    const updates = [];
+    const values = [];
+
+    if (full_name) {
+      updates.push('full_name = ?');
+      values.push(full_name);
+    }
+
+    if (email) {
+      updates.push('email = ?');
+      values.push(email);
+    }
+
+    if (phone !== undefined) {
+      updates.push('phone = ?');
+      values.push(phone || null);
+    }
+
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      const password_hash = await bcrypt.hash(password, salt);
+      updates.push('password_hash = ?');
+      values.push(password_hash);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ message: 'No fields to update' });
+    }
+
+    values.push(userId);
+
+    await db.query(
+      `UPDATE Users SET ${updates.join(', ')} WHERE user_id = ?`,
+      values
+    );
+
+    res.json({ message: 'Profile updated successfully' });
+  } catch (err) {
+    console.error('Update profile error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 };
