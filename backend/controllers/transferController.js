@@ -404,3 +404,59 @@ export const getTransactionDetails = async (req, res) => {
   }
 };
 
+// GET TRANSACTION HISTORY WITH PAGINATION
+export const getTransactionHistory = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 15;
+    const offset = (page - 1) * limit;
+
+    // Get user's account
+    const [userAccounts] = await db.query(
+      'SELECT account_id FROM Accounts WHERE user_id = ? AND status = "active" LIMIT 1',
+      [userId]
+    );
+
+    if (userAccounts.length === 0) {
+      return res.json({ transactions: [], hasMore: false });
+    }
+
+    const accountId = userAccounts[0].account_id;
+
+    // Get transactions with basic info
+    const [transactions] = await db.query(
+      `SELECT 
+        t.transaction_id,
+        t.type,
+        t.amount,
+        t.status,
+        t.description,
+        t.created_at
+      FROM Transactions t
+      WHERE t.from_account_id = ?
+      ORDER BY t.created_at DESC
+      LIMIT ? OFFSET ?`,
+      [accountId, limit, offset]
+    );
+
+    // Check if there are more transactions
+    const [countResult] = await db.query(
+      'SELECT COUNT(*) as total FROM Transactions WHERE from_account_id = ?',
+      [accountId]
+    );
+    const total = countResult[0].total;
+    const hasMore = (offset + limit) < total;
+
+    res.json({ 
+      transactions,
+      hasMore,
+      currentPage: page,
+      totalTransactions: total
+    });
+  } catch (err) {
+    console.error('Get transaction history error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+

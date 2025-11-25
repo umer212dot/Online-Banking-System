@@ -43,9 +43,7 @@ export const registerUser = async (req, res) => {
 
 // REGISTER ADMIN (backend-only, via Postman)
 export const registerAdmin = async (req, res) => {
-  // const { full_name, email, password, phone, cnic } = req.body;
   const { fullName, email, password, phone, cnic } = req.body;
-
 
   // Required fields check
   if (!fullName || !email || !password || !cnic) {
@@ -93,6 +91,16 @@ export const loginUser = async (req, res) => {
     const [users] = await db.query('SELECT * FROM Users WHERE email = ?', [email]);
     const user = users[0];
     if (!user) return res.status(400).json({ message: 'Invalid credentials' });
+
+    // Block login for deleted accounts
+    if (user.status === 'deleted') {
+      return res.status(403).json({ message: 'Account has been deleted' });
+    }
+
+    // access denied for rejected accounts
+    if (user.status === 'rejected') {
+      return res.status(403).json({ message: 'Account opening request denied' });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password_hash);
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
