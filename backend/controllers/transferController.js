@@ -1,4 +1,5 @@
 import db from '../config/db.js';
+import { getIO } from '../socket.js';
 
 // GET USER ACCOUNT (single account per user)
 export const getUserAccount = async (req, res) => {
@@ -73,7 +74,7 @@ export const createInternalTransfer = async (req, res) => {
 
     // Get user's account (single account per user)
     const [fromAccounts] = await connection.query(
-      'SELECT account_id, balance, status FROM Accounts WHERE user_id = ? AND status = "active" LIMIT 1',
+      'SELECT account_id, account_number, balance, status FROM Accounts WHERE user_id = ? AND status = "active" LIMIT 1',
       [userId]
     );
     if (fromAccounts.length === 0) {
@@ -147,6 +148,35 @@ export const createInternalTransfer = async (req, res) => {
       [amount, toAccount.account_id]
     );
 
+    // Get recipient user_id for notification
+    const [recipientAccount] = await connection.query(
+      'SELECT user_id FROM Accounts WHERE account_id = ?',
+      [toAccount.account_id]
+    );
+
+    // Create notification for recipient
+    if (recipientAccount.length > 0) {
+      const recipientUserId = recipientAccount[0].user_id;
+      const notificationMessage = `You received $${parseFloat(amount).toFixed(2)} from ${fromAccount.account_number}`;
+      
+      await connection.query(
+        'INSERT INTO Notifications (user_id, type, message) VALUES (?, ?, ?)',
+        [recipientUserId, 'transfer', notificationMessage]
+      );
+
+      // Emit socket event to recipient
+      try {
+        const io = getIO();
+        io.to(`user_${recipientUserId}`).emit('new_notification', {
+          message: notificationMessage,
+          type: 'transfer'
+        });
+      } catch (socketErr) {
+        console.error('Socket emit error:', socketErr);
+        // Don't fail the transaction if socket fails
+      }
+    }
+
     await connection.commit();
     res.status(201).json({ 
       message: 'Transfer completed successfully',
@@ -178,7 +208,7 @@ export const createExternalTransfer = async (req, res) => {
 
     // Get user's account (single account per user)
     const [fromAccounts] = await connection.query(
-      'SELECT account_id, balance, status FROM Accounts WHERE user_id = ? AND status = "active" LIMIT 1',
+      'SELECT account_id, account_number, balance, status FROM Accounts WHERE user_id = ? AND status = "active" LIMIT 1',
       [userId]
     );
     if (fromAccounts.length === 0) {

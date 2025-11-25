@@ -1,6 +1,7 @@
 import { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import NotificationBell from './NotificationBell';
 
 const CustomerNavbar = () => {
   const navigate = useNavigate();
@@ -43,12 +44,15 @@ const CustomerNavbar = () => {
         <Link to="/currency-converter" className="hover:text-gray-300">Currency Converter</Link>
       </div>
 
-      {/* Right: User dropdown */}
-      <div className="relative">
-        <button
-          onClick={() => setDropdownOpen(!dropdownOpen)}
-          className="flex items-center space-x-2 hover:text-gray-300 focus:outline-none"
-        >
+      {/* Right: Notifications and User dropdown */}
+      <div className="flex items-center gap-4">
+        <NotificationBell />
+
+        <div className="relative">
+          <button
+            onClick={() => setDropdownOpen(!dropdownOpen)}
+            className="flex items-center space-x-2 hover:text-gray-300 focus:outline-none"
+          >
           <span className="flex items-center space-x-2">
             <span className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-sm font-medium">{initials}</span>
             <span>{displayName}</span>
@@ -61,18 +65,19 @@ const CustomerNavbar = () => {
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
           </svg>
-        </button>
+          </button>
 
-        {dropdownOpen && (
-          <div className="absolute right-0 mt-2 w-40 bg-white text-gray-900 rounded-lg shadow-lg border">
-            <button
-              onClick={handleLogout}
-              className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg"
-            >
-              Logout
-            </button>
-          </div>
-        )}
+          {dropdownOpen && (
+            <div className="absolute right-0 mt-2 w-40 bg-white text-gray-900 rounded-lg shadow-lg border">
+              <button
+                onClick={handleLogout}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg"
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </nav>
   );
