@@ -6,6 +6,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import Transfer from './pages/Transfer';
 import BillPayment from './pages/BillPayment';
 import BillerManagement from './pages/BillerManagement';
+import TransactionHistory from './pages/TransactionHistory';
 import { AuthProvider } from './context/AuthContext';
 import CurrencyConverter from './pages/CurrencyConverter';
 
@@ -22,6 +23,7 @@ function App() {
           <Route path="/transfer" element={<Transfer />} />
           <Route path="/bill-payment" element={<BillPayment />} />
           <Route path="/admin/billers" element={<BillerManagement />} />
+          <Route path="/transactions" element={<TransactionHistory />} />
           <Route path="/currency-converter" element={<CurrencyConverter />} />
         </Routes>
       </Router>
