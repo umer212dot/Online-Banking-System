@@ -14,8 +14,10 @@ export const protect = (req, res, next) => {
   }
 };
 
-// Optional middleware for role-based access
+// Admin-only middleware (automatically calls protect first)
 export const adminOnly = (req, res, next) => {
-  if (req.userRole !== 'admin') return res.status(403).json({ message: 'Admin access required' });
-  next();
+  protect(req, res, () => {
+    if (req.userRole !== 'admin') return res.status(403).json({ message: 'Admin access required' });
+    next();
+  });
 };

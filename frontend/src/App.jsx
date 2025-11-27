@@ -11,6 +11,8 @@ import AdminNotifications from './pages/AdminNotifications';
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import CurrencyConverter from './pages/CurrencyConverter';
+import CustomerSupportTicket from './pages/CustomerSupportTicket';
+import AdminSupportTicket from './pages/AdminSupportTicket';
 
 function App() {
   return (
@@ -29,6 +31,8 @@ function App() {
           <Route path="/admin/notifications" element={<AdminNotifications />} />
           <Route path="/transactions" element={<TransactionHistory />} />
           <Route path="/currency-converter" element={<CurrencyConverter />} />
+          <Route path="/support-tickets" element={<CustomerSupportTicket/>} />
+          <Route path="/admin/tickets" element={<AdminSupportTicket/>} />
         </Routes>
         </Router>
       </SocketProvider>

@@ -7,6 +7,7 @@ import authRoutes from './routes/authRoutes.js';
 import transferRoutes from './routes/transferRoutes.js';
 import billRoutes from './routes/billRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+import supportRoutes from './routes/supportRoutes.js';
 import { initializeSocket } from './socket.js';
 import db from './config/db.js';
 
@@ -32,6 +33,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/transfer', transferRoutes);
 app.use('/api/bill', billRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use("/api/support", supportRoutes);
 
 // Test route
 app.get('/', (req, res) => {
