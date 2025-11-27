@@ -88,7 +88,7 @@ CREATE TABLE BillPayments (
 CREATE TABLE Notifications (
     notification_id  BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id          BIGINT NOT NULL,
-    type             ENUM('transfer','account_activity','system_noti') NOT NULL,
+    type             ENUM('transfer','system_noti','account_activity') NOT NULL,
     message          VARCHAR(255) NOT NULL,
     is_read          BOOLEAN NOT NULL DEFAULT FALSE,
     created_at       DATETIME DEFAULT CURRENT_TIMESTAMP,
