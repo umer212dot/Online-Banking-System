@@ -39,9 +39,9 @@ const CustomerNavbar = () => {
         <Link to="/customer/dashboard" className="hover:text-gray-300">Home</Link>
         <Link to="/transfer" className="hover:text-gray-300">Transfer</Link>
         <Link to="/bill-payment" className="hover:text-gray-300">Bill Payment</Link>
-        <Link to="/services" className="hover:text-gray-300">Services</Link>
         <Link to="/transactions" className="hover:text-gray-300">Transactions</Link>
         <Link to="/currency-converter" className="hover:text-gray-300">Currency Converter</Link>
+        <Link to="/support-tickets" className="hover:text-gray-300">Support Tickets</Link>
       </div>
 
       {/* Right: Notifications and User dropdown */}
