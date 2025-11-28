@@ -29,7 +29,7 @@ const CustomerNavbar = () => {
 
   return (
     <nav className="bg-gray-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
-      {/* Left: Logo / Home */}
+      {/* Left: Logo */}
       <div className="text-xl font-bold">
         <Link to="/">Banking System</Link>
       </div>
@@ -39,12 +39,12 @@ const CustomerNavbar = () => {
         <Link to="/customer/dashboard" className="hover:text-gray-300">Home</Link>
         <Link to="/transfer" className="hover:text-gray-300">Transfer</Link>
         <Link to="/bill-payment" className="hover:text-gray-300">Bill Payment</Link>
-        <Link to="/services" className="hover:text-gray-300">Services</Link>
         <Link to="/transactions" className="hover:text-gray-300">Transactions</Link>
         <Link to="/currency-converter" className="hover:text-gray-300">Currency Converter</Link>
+        <Link to="/support-tickets" className="hover:text-gray-300">Support Tickets</Link>
       </div>
 
-      {/* Right: Notifications and User dropdown */}
+      {/* Right: Notifications + Dropdown */}
       <div className="flex items-center gap-4">
         <NotificationBell />
 
@@ -59,6 +59,7 @@ const CustomerNavbar = () => {
               </span>
               <span>{displayName}</span>
             </span>
+
             <svg
               className={`w-4 h-4 transform transition-transform ${dropdownOpen ? 'rotate-180' : ''}`}
               fill="none"
@@ -71,6 +72,24 @@ const CustomerNavbar = () => {
 
           {dropdownOpen && (
             <div className="absolute right-0 mt-2 w-40 bg-white text-gray-900 rounded-lg shadow-lg border">
+              
+              {/* Edit Profile */}
+              <button
+                onClick={() => navigate('/edit-profile')}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg"
+              >
+                Edit Profile
+              </button>
+
+              {/* Account Details */}
+              <button
+                onClick={() => navigate('/account-details')}
+                className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg"
+              >
+                Account Details
+              </button>
+
+              {/* Logout */}
               <button
                 onClick={handleLogout}
                 className="w-full text-left px-4 py-2 hover:bg-gray-100 rounded-lg"

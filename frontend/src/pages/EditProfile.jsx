@@ -6,6 +6,10 @@ import { AuthContext } from '../context/AuthContext';
 const EditProfile = () => {
   const navigate = useNavigate();
   const { user, loadUser } = useContext(AuthContext);
+  const [authVerified, setAuthVerified] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [verifyingPassword, setVerifyingPassword] = useState(false);
   
   // Original values (for cancel functionality)
   const [originalData, setOriginalData] = useState({
@@ -42,6 +46,7 @@ const EditProfile = () => {
   const passwordRef = useRef(null);
 
   useEffect(() => {
+    if (!authVerified) return;
     const fetchUserData = async () => {
       if (!user) {
         const fetchedUser = await loadUser();
@@ -73,32 +78,36 @@ const EditProfile = () => {
       }
     };
     fetchUserData();
-  }, [user, loadUser]);
+  }, [user, loadUser, authVerified]);
 
   // Auto-focus when edit mode is enabled
   useEffect(() => {
+    if (!authVerified) return;
     if (editingFields.full_name && fullNameRef.current) {
       fullNameRef.current.focus();
     }
-  }, [editingFields.full_name]);
+  }, [editingFields.full_name, authVerified]);
 
   useEffect(() => {
+    if (!authVerified) return;
     if (editingFields.email && emailRef.current) {
       emailRef.current.focus();
     }
-  }, [editingFields.email]);
+  }, [editingFields.email, authVerified]);
 
   useEffect(() => {
+    if (!authVerified) return;
     if (editingFields.phone && phoneRef.current) {
       phoneRef.current.focus();
     }
-  }, [editingFields.phone]);
+  }, [editingFields.phone, authVerified]);
 
   useEffect(() => {
+    if (!authVerified) return;
     if (editingFields.password && passwordRef.current) {
       passwordRef.current.focus();
     }
-  }, [editingFields.password]);
+  }, [editingFields.password, authVerified]);
 
   const handleEditClick = (field) => {
     setEditingFields(prev => ({ ...prev, [field]: true }));
@@ -152,12 +161,24 @@ const EditProfile = () => {
     setLoading(true);
 
     try {
-      // Only include password if it's provided
-      const updateData = { ...formData };
-      if (!updateData.password || updateData.password.trim() === '') {
-        delete updateData.password;
+      const updateData = {};
+
+      ['full_name', 'email', 'phone'].forEach((field) => {
+        const newValue = formData[field] ?? '';
+        const originalValue = originalData[field] ?? '';
+        if (newValue !== originalValue) {
+          updateData[field] = newValue;
+        }
+      });
+
+      if (editingFields.password && formData.password.trim() !== '') {
+        updateData.password = formData.password.trim();
       }
-      delete updateData.confirmPassword;
+
+      if (Object.keys(updateData).length === 0) {
+        setError('No changes to update');
+        return;
+      }
 
       const response = await fetch('http://localhost:5000/api/auth/update-profile', {
         method: 'PUT',
@@ -185,6 +206,38 @@ const EditProfile = () => {
     }
   };
 
+  const handlePasswordVerify = async (e) => {
+    e.preventDefault();
+    setPasswordError('');
+
+    if (!currentPassword || currentPassword.trim() === '') {
+      setPasswordError('Please enter your current password');
+      return;
+    }
+
+    setVerifyingPassword(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/verify-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: currentPassword }),
+        credentials: 'include',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.message || 'Verification failed');
+
+      setAuthVerified(true);
+      setCurrentPassword('');
+      setPasswordError('');
+    } catch (err) {
+      setPasswordError(err.message);
+    } finally {
+      setVerifyingPassword(false);
+    }
+  };
+
   // Edit icon SVG
   const EditIcon = ({ className = "w-5 h-5" }) => (
     <svg
@@ -207,26 +260,27 @@ const EditProfile = () => {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <CustomerNavbar />
       <main className="flex justify-center items-start p-6 md:p-8">
-        <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-8 py-6">
-            <h2 className="text-3xl font-bold text-white">Edit Profile</h2>
-            <p className="text-gray-300 mt-1">Manage your account information</p>
-          </div>
+        {authVerified ? (
+          <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-gray-900 to-gray-800 px-8 py-6">
+              <h2 className="text-3xl font-bold text-white">Edit Profile</h2>
+              <p className="text-gray-300 mt-1">Manage your account information</p>
+            </div>
 
-          <div className="p-8">
-            {error && (
-              <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
-                <p className="text-red-700 text-sm font-medium">{error}</p>
-              </div>
-            )}
-            {success && (
-              <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-lg">
-                <p className="text-green-700 text-sm font-medium">{success}</p>
-              </div>
-            )}
+            <div className="p-8">
+              {error && (
+                <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+                  <p className="text-red-700 text-sm font-medium">{error}</p>
+                </div>
+              )}
+              {success && (
+                <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-lg">
+                  <p className="text-green-700 text-sm font-medium">{success}</p>
+                </div>
+              )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-6">
               {/* Full Name Field */}
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -405,9 +459,48 @@ const EditProfile = () => {
                   {loading ? 'Saving Changes...' : 'Save Changes'}
                 </button>
               </div>
+              </form>
+            </div>
+          </div>
+        ) : (
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Verify Identity</h2>
+            <p className="text-gray-600 mb-6">
+              Please confirm your current password before editing your profile details.
+            </p>
+            <form onSubmit={handlePasswordVerify} className="space-y-4 text-left">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  placeholder="Enter your current password"
+                />
+              </div>
+              {passwordError && (
+                <p className="text-sm text-red-600">{passwordError}</p>
+              )}
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={() => navigate('/customer/dashboard')}
+                  className="flex-1 py-3 px-6 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={verifyingPassword}
+                  className="flex-1 py-3 px-6 rounded-lg bg-gradient-to-r from-gray-900 to-gray-800 text-white font-semibold hover:from-gray-800 hover:to-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  {verifyingPassword ? 'Verifying...' : 'Continue'}
+                </button>
+              </div>
             </form>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );

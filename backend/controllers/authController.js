@@ -215,3 +215,30 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// VERIFY CURRENT PASSWORD BEFORE SENSITIVE ACTIONS
+export const verifyPassword = async (req, res) => {
+  try {
+    const userId = req.userId;
+    if (!userId) return res.status(401).json({ message: 'Not authorized' });
+
+    const { password } = req.body;
+    if (!password || password.trim() === '') {
+      return res.status(400).json({ message: 'Current password is required' });
+    }
+
+    const [users] = await db.query('SELECT password_hash FROM Users WHERE user_id = ?', [userId]);
+    const user = users[0];
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Incorrect password' });
+    }
+
+    res.json({ message: 'Password verified' });
+  } catch (err) {
+    console.error('Verify password error:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
