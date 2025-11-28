@@ -7,10 +7,10 @@ import authRoutes from './routes/authRoutes.js';
 import transferRoutes from './routes/transferRoutes.js';
 import billRoutes from './routes/billRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
+import supportRoutes from './routes/supportRoutes.js';
 import adminUserRoutes from './routes/adminUserRoutes.js';
 import adminAccountRoutes from './routes/adminAccountRoutes.js';
 import adminDashboardRoutes from './routes/adminDashboardRoutes.js';
-import supportRoutes from './routes/supportRoutes.js';
 import accountRoutes from './routes/accountRoutes.js';
 import { initializeSocket } from './socket.js';
 import db from './config/db.js';
@@ -37,10 +37,10 @@ app.use('/api/auth', authRoutes);
 app.use('/api/transfer', transferRoutes);
 app.use('/api/bill', billRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use("/api/support", supportRoutes);
 app.use('/api/admin/users', adminUserRoutes);
 app.use('/api/admin/accounts', adminAccountRoutes);
 app.use('/api/admin/dashboard', adminDashboardRoutes);
-app.use('/api/support', supportRoutes);
 app.use('/api/account', accountRoutes);
 
 // Test route

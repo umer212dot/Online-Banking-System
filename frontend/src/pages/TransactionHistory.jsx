@@ -169,6 +169,16 @@ const TransactionHistory = () => {
                             <h3 className="font-semibold text-gray-900">
                               {getTransactionTypeLabel(transaction.type)}
                             </h3>
+                            {transaction.direction === 'incoming' && (
+                              <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+                                INCOMING
+                              </span>
+                            )}
+                            {transaction.direction === 'outgoing' && (
+                              <span className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
+                                OUTGOING
+                              </span>
+                            )}
                             <span
                               className={`px-2 py-1 rounded text-xs font-medium ${
                                 transaction.status === 'completed'
@@ -191,10 +201,18 @@ const TransactionHistory = () => {
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="text-right">
+                          {transaction.direction === 'incoming' && (
+                            <p className="text-xs text-green-600 font-medium mb-1">INCOMING</p>
+                          )}
+                          {transaction.direction === 'outgoing' && (
+                            <p className="text-xs text-red-600 font-medium mb-1">OUTGOING</p>
+                          )}
                           <p className={`font-bold text-lg ${
-                            transaction.status === 'completed' ? 'text-gray-900' : 'text-red-600'
+                            transaction.direction === 'incoming' 
+                              ? 'text-green-600' 
+                              : 'text-red-600'
                           }`}>
-                            ${parseFloat(transaction.amount).toFixed(2)}
+                            {transaction.direction === 'incoming' ? '+' : '-'}${parseFloat(transaction.amount).toFixed(2)}
                           </p>
                         </div>
                         <button
@@ -290,7 +308,25 @@ const TransactionHistory = () => {
                   )}
 
                   {/* Type-specific details */}
-                  {selectedTransaction.type === 'internal_transfer' && transactionDetails.to_account_number && (
+                  {selectedTransaction.type === 'internal_transfer' && transactionDetails.direction === 'incoming' && (
+                    <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                      <h3 className="font-semibold text-gray-900 mb-3">Sender Details</h3>
+                      <div className="space-y-2">
+                        <div>
+                          <p className="text-sm text-gray-600">From Account Number:</p>
+                          <p className="font-semibold text-gray-900">{transactionDetails.from_account_number}</p>
+                        </div>
+                        {transactionDetails.from_account_holder && (
+                          <div>
+                            <p className="text-sm text-gray-600">From Account Holder:</p>
+                            <p className="font-semibold text-gray-900">{transactionDetails.from_account_holder}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedTransaction.type === 'internal_transfer' && transactionDetails.direction === 'outgoing' && transactionDetails.to_account_number && (
                     <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                       <h3 className="font-semibold text-gray-900 mb-3">Recipient Details</h3>
                       <div className="space-y-2">
@@ -352,13 +388,25 @@ const TransactionHistory = () => {
                     </div>
                   )}
 
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <p className="text-sm text-gray-600 mb-1">From Account</p>
-                    <p className="font-semibold text-gray-900">{transactionDetails.from_account_number}</p>
-                    {transactionDetails.from_account_holder && (
-                      <p className="text-sm text-gray-600 mt-1">{transactionDetails.from_account_holder}</p>
-                    )}
-                  </div>
+                  {transactionDetails.direction === 'outgoing' && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">From Account</p>
+                      <p className="font-semibold text-gray-900">{transactionDetails.from_account_number}</p>
+                      {transactionDetails.from_account_holder && (
+                        <p className="text-sm text-gray-600 mt-1">{transactionDetails.from_account_holder}</p>
+                      )}
+                    </div>
+                  )}
+                  
+                  {transactionDetails.direction === 'incoming' && transactionDetails.to_account_number && (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 mb-1">To Account (Your Account)</p>
+                      <p className="font-semibold text-gray-900">{transactionDetails.to_account_number}</p>
+                      {transactionDetails.to_account_holder && (
+                        <p className="text-sm text-gray-600 mt-1">{transactionDetails.to_account_holder}</p>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex gap-3 justify-end mt-6">

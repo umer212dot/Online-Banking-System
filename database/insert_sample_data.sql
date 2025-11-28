@@ -41,9 +41,9 @@ INSERT INTO Users (full_name, email, phone, cnic, password_hash, role, status) V
 INSERT INTO Accounts (user_id, account_number, balance, status) VALUES
 (1, 'ACC-2024-0001', 50000.00, 'active'),
 (2, 'ACC-2024-0002', 75000.50, 'active'),
-(3, 'ACC-2024-0003', 25000.75, 'closed'),
+-- (3, 'ACC-2024-0003', 25000.75, 'closed'), 
 (4, 'ACC-2024-0004', 100000.00, 'closed'),
-(5, 'ACC-2024-0005', 15000.25, 'frozen');
+(6, 'ACC-2024-0005', 15000.25, 'frozen');
 
 -- ============================================
 -- 3. BILLER TABLE
@@ -88,9 +88,8 @@ INSERT INTO Transactions (from_account_id, type, amount, status, description) VA
 INSERT INTO InternalTransfers (transaction_id, to_account_id) VALUES
 (1, 2),  -- From account 1 to account 2
 (2, 3),  -- From account 2 to account 3
-(3, 4),  -- From account 3 to account 4
-(4, 5),  -- From account 4 to account 5
-(5, 2);  -- From account 1 to account 2
+(3, 4);  -- From account 3 to account 4
+
 
 -- ============================================
 -- 6. EXTERNAL TRANSFERS TABLE
@@ -119,13 +118,10 @@ INSERT INTO BillPayments (transaction_id, biller_id, consumer_number) VALUES
 -- ============================================
 INSERT INTO Notifications (user_id, type, message, is_read) VALUES
 (1, 'transfer', 'Your transfer of $5,000.00 to ACC-2024-0002 has been completed', FALSE),
-(1, 'payment', 'Your bill payment of $5,000.00 to K-Electric has been processed', TRUE),
 (2, 'transfer', 'You received $5,000.00 from ACC-2024-0001', FALSE),
 (2, 'transfer', 'Your external transfer of $20,000.00 to HBL has been completed', FALSE),
 (3, 'account_activity', 'Your account balance has been updated', TRUE),
 (3, 'transfer', 'You received $10,000.00 from ACC-2024-0002', FALSE),
-(4, 'payment', 'Your bill payment of $3,000.00 to SSGC has been processed', TRUE),
-(4, 'transfer', 'Your transfer of $15,000.00 to ACC-2024-0005 has been completed', FALSE),
 (5, 'transfer', 'You received $15,000.00 from ACC-2024-0004', FALSE),
 (1, 'account_activity', 'Your account statement is ready for download', FALSE);
 

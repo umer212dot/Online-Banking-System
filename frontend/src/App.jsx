@@ -15,7 +15,6 @@ import { SocketProvider } from './context/SocketContext';
 import CurrencyConverter from './pages/CurrencyConverter';
 import EditProfile from './pages/EditProfile';
 import AccountDetails from './pages/AccountDetails';
-import Notifications from './pages/Notifications';
 import CustomerSupportTicket from './pages/CustomerSupportTicket';
 import AdminSupportTicket from './pages/AdminSupportTicket';
 
@@ -40,7 +39,6 @@ function App() {
             <Route path="/currency-converter" element={<CurrencyConverter />} />
             <Route path="/edit-profile" element={<EditProfile />} />
             <Route path="/account-details" element={<AccountDetails />} />
-            <Route path="/notifications" element={<Notifications />} />
             <Route path="/support-tickets" element={<CustomerSupportTicket />} />
             <Route path="/admin/tickets" element={<AdminSupportTicket />} />
           </Routes>

@@ -304,7 +304,7 @@ const EditProfile = () => {
                     onChange={handleChange}
                     onDoubleClick={() => handleEditClick('phone')}
                     readOnly={!editingFields.phone}
-                    placeholder="Not set"
+                    placeholder="Change Phone Number"
                     className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
                       editingFields.phone
                         ? 'border-blue-500 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500'

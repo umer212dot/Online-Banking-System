@@ -76,6 +76,16 @@ export const updateUserStatus = async (req, res) => {
       [status, userId]
     );
 
+    // If user is being deleted, also close their account
+    if (status === 'deleted') {
+      await db.query(
+        `UPDATE Accounts
+         SET status = 'closed', updated_at = CURRENT_TIMESTAMP
+         WHERE user_id = ?`,
+        [userId]
+      );
+    }
+
     if (status === 'approved' && currentStatus !== 'approved') {
       const [existingAccounts] = await db.query(
         `SELECT account_id FROM Accounts WHERE user_id = ?`,
