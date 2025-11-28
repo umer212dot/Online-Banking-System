@@ -14,14 +14,12 @@ const EditProfile = () => {
   // Original values (for cancel functionality)
   const [originalData, setOriginalData] = useState({
     full_name: '',
-    email: '',
     phone: '',
   });
   
   // Current form data
   const [formData, setFormData] = useState({
     full_name: '',
-    email: '',
     password: '',
     confirmPassword: '',
     phone: '',
@@ -30,7 +28,6 @@ const EditProfile = () => {
   // Edit states for each field
   const [editingFields, setEditingFields] = useState({
     full_name: false,
-    email: false,
     phone: false,
     password: false,
   });
@@ -41,33 +38,18 @@ const EditProfile = () => {
   
   // Refs for auto-focusing inputs
   const fullNameRef = useRef(null);
-  const emailRef = useRef(null);
   const phoneRef = useRef(null);
   const passwordRef = useRef(null);
 
   useEffect(() => {
     if (!authVerified) return;
     const fetchUserData = async () => {
-      if (!user) {
-        const fetchedUser = await loadUser();
-        if (fetchedUser) {
-          const data = {
-            full_name: fetchedUser.full_name || '',
-            email: fetchedUser.email || '',
-            phone: fetchedUser.phone || '',
-          };
-          setFormData({
-            ...data,
-            password: '',
-            confirmPassword: '',
-          });
-          setOriginalData(data);
-        }
-      } else {
+      // Always reload user data to ensure we have the latest phone number
+      const currentUser = user || await loadUser();
+      if (currentUser) {
         const data = {
-          full_name: user.full_name || '',
-          email: user.email || '',
-          phone: user.phone || '',
+          full_name: currentUser.full_name || '',
+          phone: currentUser.phone || '',
         };
         setFormData({
           ...data,
@@ -87,13 +69,6 @@ const EditProfile = () => {
       fullNameRef.current.focus();
     }
   }, [editingFields.full_name, authVerified]);
-
-  useEffect(() => {
-    if (!authVerified) return;
-    if (editingFields.email && emailRef.current) {
-      emailRef.current.focus();
-    }
-  }, [editingFields.email, authVerified]);
 
   useEffect(() => {
     if (!authVerified) return;
@@ -129,7 +104,6 @@ const EditProfile = () => {
     });
     setEditingFields({
       full_name: false,
-      email: false,
       phone: false,
       password: false,
     });
@@ -163,7 +137,7 @@ const EditProfile = () => {
     try {
       const updateData = {};
 
-      ['full_name', 'email', 'phone'].forEach((field) => {
+      ['full_name', 'phone'].forEach((field) => {
         const newValue = formData[field] ?? '';
         const originalValue = originalData[field] ?? '';
         if (newValue !== originalValue) {
@@ -316,41 +290,6 @@ const EditProfile = () => {
                 </div>
               </div>
 
-              {/* Email Field */}
-              <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Email Address
-                </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    ref={emailRef}
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    onDoubleClick={() => handleEditClick('email')}
-                    readOnly={!editingFields.email}
-                    className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
-                      editingFields.email
-                        ? 'border-blue-500 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500'
-                        : 'border-gray-200 bg-gray-50 cursor-text'
-                    }`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleEditClick('email')}
-                    className={`p-3 rounded-lg transition-colors ${
-                      editingFields.email
-                        ? 'bg-blue-100 text-blue-600'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                    disabled={editingFields.email}
-                  >
-                    <EditIcon />
-                  </button>
-                </div>
-              </div>
-
               {/* Phone Field */}
               <div className="space-y-2">
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -361,11 +300,11 @@ const EditProfile = () => {
                     ref={phoneRef}
                     type="tel"
                     name="phone"
-                    value={formData.phone}
+                    value={formData.phone || ''}
                     onChange={handleChange}
                     onDoubleClick={() => handleEditClick('phone')}
                     readOnly={!editingFields.phone}
-                    placeholder={formData.phone || "Not set"}
+                    placeholder="Not set"
                     className={`flex-1 px-4 py-3 rounded-lg border-2 transition-all ${
                       editingFields.phone
                         ? 'border-blue-500 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500'

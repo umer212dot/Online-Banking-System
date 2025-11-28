@@ -35,14 +35,24 @@ const CustomerDashboard = () => {
           }),
         ]);
 
+        // Handle account response - works for active, frozen, and closed accounts
         if (accountRes.ok) {
           const accountData = await accountRes.json();
           setAccount(accountData.account);
+        } else {
+          const errorData = await accountRes.json().catch(() => ({}));
+          console.error('Account fetch error:', errorData.message || 'Failed to load account');
         }
 
+        // Handle transactions response - works for all account statuses (active, frozen, closed)
         if (transactionsRes.ok) {
           const transactionsData = await transactionsRes.json();
           setRecentTransactions(transactionsData.transactions || []);
+        } else {
+          const errorData = await transactionsRes.json().catch(() => ({}));
+          console.error('Transactions fetch error:', errorData.message || 'Failed to load transactions');
+          // Still set empty array so UI doesn't break
+          setRecentTransactions([]);
         }
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
@@ -320,21 +330,19 @@ const CustomerDashboard = () => {
                     account?.status === 'active'
                       ? 'bg-green-100 text-green-800'
                       : account?.status === 'frozen'
-                      ? 'bg-yellow-100 text-yellow-800'
+                      ? 'bg-blue-100 text-blue-800'
+                      : account?.status === 'closed'
+                      ? 'bg-gray-200 text-gray-700'
                       : 'bg-red-100 text-red-800'
                   }`}>
                     {account?.status?.toUpperCase() || 'N/A'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-600">Account Type</span>
-                  <span className="text-gray-900 font-medium">Savings</span>
-                </div>
-                <div className="flex items-center justify-between">
                   <span className="text-gray-600">Member Since</span>
                   <span className="text-gray-900 font-medium">
-                    {user?.created_at
-                      ? new Date(user.created_at).toLocaleDateString('en-US', {
+                    {account?.created_at
+                      ? new Date(account.created_at).toLocaleDateString('en-US', {
                           month: 'short',
                           year: 'numeric',
                         })

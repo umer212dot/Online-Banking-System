@@ -5,12 +5,26 @@ import { getIO } from '../socket.js';
 export const getUserAccount = async (req, res) => {
   try {
     const userId = req.userId;
+    // Check user status first - only allow if not deleted or pending
+    const [users] = await db.query(
+      'SELECT status FROM Users WHERE user_id = ?',
+      [userId]
+    );
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const userStatus = users[0].status;
+    if (userStatus === 'deleted' || userStatus === 'pending') {
+      return res.status(403).json({ message: 'Account access denied' });
+    }
+    
+    // Get account regardless of account status (active, frozen, closed)
     const [accounts] = await db.query(
-      'SELECT account_id, account_number, balance, status FROM Accounts WHERE user_id = ? AND status = "active" LIMIT 1',
+      'SELECT account_id, account_number, balance, status, created_at FROM Accounts WHERE user_id = ? LIMIT 1',
       [userId]
     );
     if (accounts.length === 0) {
-      return res.status(404).json({ message: 'No active account found' });
+      return res.status(404).json({ message: 'Account not found' });
     }
     res.json({ account: accounts[0] });
   } catch (err) {
@@ -442,9 +456,22 @@ export const getTransactionHistory = async (req, res) => {
     const limit = parseInt(req.query.limit) || 15;
     const offset = (page - 1) * limit;
 
-    // Get user's account
+    // Check user status first - only allow if not deleted or pending
+    const [users] = await db.query(
+      'SELECT status FROM Users WHERE user_id = ?',
+      [userId]
+    );
+    if (users.length === 0) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const userStatus = users[0].status;
+    if (userStatus === 'deleted' || userStatus === 'pending') {
+      return res.json({ transactions: [], hasMore: false });
+    }
+
+    // Get user's account regardless of account status (active, frozen, closed)
     const [userAccounts] = await db.query(
-      'SELECT account_id FROM Accounts WHERE user_id = ? AND status = "active" LIMIT 1',
+      'SELECT account_id FROM Accounts WHERE user_id = ? LIMIT 1',
       [userId]
     );
 
