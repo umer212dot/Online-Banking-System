@@ -343,7 +343,20 @@ export const getTransactionDetails = async (req, res) => {
     const { transaction_id } = req.params;
     const userId = req.userId;
 
+    // Get user's account (allow active and frozen accounts)
+    const [userAccounts] = await db.query(
+      'SELECT account_id FROM Accounts WHERE user_id = ? AND status IN ("active", "frozen") LIMIT 1',
+      [userId]
+    );
+
+    if (userAccounts.length === 0) {
+      return res.status(404).json({ message: 'Account not found' });
+    }
+
+    const userAccountId = userAccounts[0].account_id;
+
     // Get transaction with account and user details
+    // Check if user is either sender or recipient
     const [transactions] = await db.query(
       `SELECT 
         t.transaction_id,
@@ -354,13 +367,19 @@ export const getTransactionDetails = async (req, res) => {
         t.description,
         t.created_at,
         a_from.account_number as from_account_number,
-        u_from.full_name as from_account_holder
+        u_from.full_name as from_account_holder,
+        CASE 
+          WHEN t.from_account_id = ? THEN 'outgoing'
+          WHEN it.to_account_id = ? THEN 'incoming'
+          ELSE 'outgoing'
+        END as direction
       FROM Transactions t
       INNER JOIN Accounts a_from ON t.from_account_id = a_from.account_id
       INNER JOIN Users u_from ON a_from.user_id = u_from.user_id
+      LEFT JOIN InternalTransfers it ON t.transaction_id = it.transaction_id AND t.type = 'internal_transfer'
       WHERE t.transaction_id = ? 
-        AND a_from.user_id = ?`,
-      [transaction_id, userId]
+        AND (t.from_account_id = ? OR (it.to_account_id = ? AND t.type = 'internal_transfer'))`,
+      [userAccountId, userAccountId, transaction_id, userAccountId, userAccountId]
     );
 
     if (transactions.length === 0) {
@@ -368,6 +387,8 @@ export const getTransactionDetails = async (req, res) => {
     }
 
     const transaction = transactions[0];
+    const isIncoming = transaction.direction === 'incoming';
+    
     let receiptData = {
       transaction_id: transaction.transaction_id,
       type: transaction.type,
@@ -375,6 +396,7 @@ export const getTransactionDetails = async (req, res) => {
       status: transaction.status,
       description: transaction.description,
       created_at: transaction.created_at,
+      direction: transaction.direction,
       from_account_number: transaction.from_account_number,
       from_account_holder: transaction.from_account_holder
     };
@@ -442,9 +464,9 @@ export const getTransactionHistory = async (req, res) => {
     const limit = parseInt(req.query.limit) || 15;
     const offset = (page - 1) * limit;
 
-    // Get user's account
+    // Get user's account (allow active and frozen accounts)
     const [userAccounts] = await db.query(
-      'SELECT account_id FROM Accounts WHERE user_id = ? AND status = "active" LIMIT 1',
+      'SELECT account_id FROM Accounts WHERE user_id = ? AND status IN ("active", "frozen") LIMIT 1',
       [userId]
     );
 
@@ -454,7 +476,9 @@ export const getTransactionHistory = async (req, res) => {
 
     const accountId = userAccounts[0].account_id;
 
-    // Get transactions with basic info
+    // Get transactions with basic info - include both outgoing and incoming transfers
+    // Outgoing: transactions where from_account_id = accountId
+    // Incoming: internal transfers where to_account_id = accountId
     const [transactions] = await db.query(
       `SELECT 
         t.transaction_id,
@@ -462,18 +486,29 @@ export const getTransactionHistory = async (req, res) => {
         t.amount,
         t.status,
         t.description,
-        t.created_at
+        t.created_at,
+        CASE 
+          WHEN t.from_account_id = ? THEN 'outgoing'
+          WHEN it.to_account_id = ? THEN 'incoming'
+          ELSE 'outgoing'
+        END as direction
       FROM Transactions t
-      WHERE t.from_account_id = ?
+      LEFT JOIN InternalTransfers it ON t.transaction_id = it.transaction_id AND t.type = 'internal_transfer'
+      WHERE t.from_account_id = ? 
+         OR (it.to_account_id = ? AND t.type = 'internal_transfer')
       ORDER BY t.created_at DESC
       LIMIT ? OFFSET ?`,
-      [accountId, limit, offset]
+      [accountId, accountId, accountId, accountId, limit, offset]
     );
 
     // Check if there are more transactions
     const [countResult] = await db.query(
-      'SELECT COUNT(*) as total FROM Transactions WHERE from_account_id = ?',
-      [accountId]
+      `SELECT COUNT(*) as total 
+      FROM Transactions t
+      LEFT JOIN InternalTransfers it ON t.transaction_id = it.transaction_id AND t.type = 'internal_transfer'
+      WHERE t.from_account_id = ? 
+         OR (it.to_account_id = ? AND t.type = 'internal_transfer')`,
+      [accountId, accountId]
     );
     const total = countResult[0].total;
     const hasMore = (offset + limit) < total;
