@@ -1,5 +1,13 @@
 import express from 'express';
-import { registerUser, loginUser, logoutUser, registerAdmin, getCurrentUser } from '../controllers/authController.js';
+import {
+  registerUser,
+  loginUser,
+  logoutUser,
+  registerAdmin,
+  getCurrentUser,
+  updateProfile,
+  verifyPassword,
+} from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
@@ -16,6 +24,12 @@ router.post('/logout', protect, logoutUser);  // logout user
 
 // Get current authenticated user
 router.get('/me', protect, getCurrentUser);
+
+// Update user profile
+router.put('/update-profile', protect, updateProfile);
+
+// Verify current password before sensitive actions
+router.post('/verify-password', protect, verifyPassword);
 
 export default router;
 

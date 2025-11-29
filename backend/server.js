@@ -8,6 +8,10 @@ import transferRoutes from './routes/transferRoutes.js';
 import billRoutes from './routes/billRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import supportRoutes from './routes/supportRoutes.js';
+import adminUserRoutes from './routes/adminUserRoutes.js';
+import adminAccountRoutes from './routes/adminAccountRoutes.js';
+import adminDashboardRoutes from './routes/adminDashboardRoutes.js';
+import accountRoutes from './routes/accountRoutes.js';
 import { initializeSocket } from './socket.js';
 import db from './config/db.js';
 
@@ -21,8 +25,8 @@ initializeSocket(httpServer);
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173', // frontend origin
-  credentials: true,               // allow cookies
+  origin: 'http://localhost:5173',
+  credentials: true,
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -34,20 +38,30 @@ app.use('/api/transfer', transferRoutes);
 app.use('/api/bill', billRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use("/api/support", supportRoutes);
+app.use('/api/admin/users', adminUserRoutes);
+app.use('/api/admin/accounts', adminAccountRoutes);
+app.use('/api/admin/dashboard', adminDashboardRoutes);
+app.use('/api/account', accountRoutes);
 
 // Test route
 app.get('/', (req, res) => {
   res.send('Backend running with MySQL');
 });
 
-// Start server
 const PORT = process.env.PORT || 5000;
-httpServer.listen(PORT, async () => {
+
+const startServer = async () => {
   try {
-    await db.query('SELECT 1'); // test DB connection
+    await db.query('SELECT 1'); // verify DB connection before starting
     console.log('MySQL connected');
+
+    httpServer.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
   } catch (err) {
     console.error('MySQL connection error:', err);
+    process.exit(1);
   }
-  console.log(`Server running on port ${PORT}`);
-});
+};
+
+startServer();
