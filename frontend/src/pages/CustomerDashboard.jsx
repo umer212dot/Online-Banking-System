@@ -289,9 +289,11 @@ const CustomerDashboard = () => {
                           {getTransactionTypeLabel(transaction.type)}
                         </h4>
                         <span className={`font-bold ${
-                          transaction.status === 'completed' ? 'text-green-600' : 'text-red-600'
+                          transaction.direction === 'incoming' 
+                            ? 'text-green-600' 
+                            : 'text-red-600'
                         }`}>
-                          {formatCurrency(transaction.amount)}
+                          {transaction.direction === 'incoming' ? '+' : '-'}{formatCurrency(transaction.amount)}
                         </span>
                       </div>
                       <div className="flex items-center gap-2 mt-1">
