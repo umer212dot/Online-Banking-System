@@ -12,6 +12,7 @@ import adminUserRoutes from './routes/adminUserRoutes.js';
 import adminAccountRoutes from './routes/adminAccountRoutes.js';
 import adminDashboardRoutes from './routes/adminDashboardRoutes.js';
 import accountRoutes from './routes/accountRoutes.js';
+import bankstatementRoutes from './routes/bankstatementRoutes.js';
 import { initializeSocket } from './socket.js';
 import db from './config/db.js';
 
@@ -42,6 +43,7 @@ app.use('/api/admin/users', adminUserRoutes);
 app.use('/api/admin/accounts', adminAccountRoutes);
 app.use('/api/admin/dashboard', adminDashboardRoutes);
 app.use('/api/account', accountRoutes);
+app.use('/api/bankstatement', bankstatementRoutes);
 
 // Test route
 app.get('/', (req, res) => {

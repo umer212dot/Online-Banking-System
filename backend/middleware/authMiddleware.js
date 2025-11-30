@@ -14,6 +14,9 @@ export const protect = (req, res, next) => {
   }
 };
 
+// Alias for protect middleware
+export const authenticateUser = protect;
+
 // Admin-only middleware (automatically calls protect first)
 export const adminOnly = (req, res, next) => {
   protect(req, res, () => {

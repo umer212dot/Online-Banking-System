@@ -31,7 +31,7 @@ const CustomerNavbar = () => {
     <nav className="bg-gray-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
       {/* Left: Logo */}
       <div className="text-xl font-bold">
-        <Link to="/">Banking System</Link>
+        <h1>Banking System</h1>
       </div>
 
       {/* Center: Tabs */}

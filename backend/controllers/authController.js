@@ -142,11 +142,11 @@ export const getCurrentUser = async (req, res) => {
     const userId = req.userId;
     if (!userId) return res.status(401).json({ message: 'Not authorized' });
 
-    const [users] = await db.query('SELECT user_id, full_name, email, phone, role FROM Users WHERE user_id = ?', [userId]);
+    const [users] = await db.query('SELECT user_id, full_name, email, phone, cnic, role FROM Users WHERE user_id = ?', [userId]);
     const user = users[0];
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    res.json({ user: { id: user.user_id, full_name: user.full_name, email: user.email, phone: user.phone, role: user.role } });
+    res.json({ user: { id: user.user_id, full_name: user.full_name, email: user.email, phone: user.phone, cnic: user.cnic, role: user.role } });
   } catch (err) {
     console.error('Get current user error:', err);
     res.status(500).json({ message: 'Server error' });
