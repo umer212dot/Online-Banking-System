@@ -7,6 +7,7 @@ const Register = () => {
     full_name: '',
     email: '',
     password: '',
+    confirm_password: '',
     phone: '',
     cnic: '',
   });
@@ -26,7 +27,35 @@ const Register = () => {
     setError('');
     setSuccess('');
     setLoading(true);
+    // Client-side validations
+    const cnicPattern = /^\d{5}-\d{6}-\d{1}$/;
+    if (formData.cnic && !cnicPattern.test(formData.cnic.trim())) {
+      setError('CNIC must be in the format: XXXXX-XXXXXX-X');
+      setLoading(false);
+      return;
+    }
 
+    if (formData.password !== formData.confirm_password) {
+      setError('Password and Confirm Password do not match');
+      setLoading(false);
+      return;
+    }
+
+    // Validate full_name - only letters and spaces
+    const namePattern = /^[a-zA-Z\s]+$/;
+    if (formData.full_name && !namePattern.test(formData.full_name.trim())) {
+      setError('Full Name must contain only letters and spaces');
+      setLoading(false);
+      return;
+    }
+
+    // Validate phone format
+    const phonePattern = /^03\d{2}-\d{7}$/;
+    if (formData.phone && !phonePattern.test(formData.phone.trim())) {
+      setError('Phone must be in the format: 03XX-YYYYYYY');
+      setLoading(false);
+      return;
+    }
     try {
       // Only customer registration
       const response = await fetch('http://localhost:5000/api/auth/register', {
@@ -86,6 +115,7 @@ const Register = () => {
               required
               className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
             />
+            
             <input
               type="email"
               name="email"
@@ -105,11 +135,20 @@ const Register = () => {
               className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
             />
             <input
+              type="password"
+              name="confirm_password"
+              value={formData.confirm_password}
+              onChange={handleChange}
+              placeholder="Confirm Password *"
+              required
+              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            />
+            <input
               type="tel"
               name="phone"
               value={formData.phone}
               onChange={handleChange}
-              placeholder="Phone Number"
+              placeholder="Phone Number (e.g., 03XX-YYYYYYY)"
               className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
             />
             <input
@@ -117,7 +156,7 @@ const Register = () => {
               name="cnic"
               value={formData.cnic}
               onChange={handleChange}
-              placeholder="CNIC"
+              placeholder="CNIC (e.g., XXXXX-XXXXXX-X)"
               className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500"
             />
 

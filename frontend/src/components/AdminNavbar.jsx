@@ -30,7 +30,7 @@ const AdminNavbar = () => {
     <nav className="bg-gray-900 text-white px-6 py-4 flex justify-between items-center shadow-md">
       {/* Left: Logo */}
       <div className="text-xl font-bold">
-        <Link to="/admin">Admin Panel</Link>
+        <h1>Admin Panel</h1>
       </div>
 
       {/* Center: Tabs */}

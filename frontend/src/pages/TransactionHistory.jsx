@@ -4,6 +4,8 @@ import CustomerNavbar from '../components/CustomerNavbar';
 import { AuthContext } from '../context/AuthContext';
 import Receipt from '../components/Receipt';
 
+import jsPDF from 'jspdf';
+
 const TransactionHistory = () => {
   const { user, loadUser } = useContext(AuthContext);
   const [transactions, setTransactions] = useState([]);
@@ -131,11 +133,223 @@ const TransactionHistory = () => {
     }
   };
 
+  const handlePrintStatement = async () => {
+    try {
+      // Fetch bank statement data from backend
+      const response = await axios.get('/api/bankstatement/statement');
+      const { customer, transactions: allTransactions } = response.data;
+
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      let yPosition = 15;
+
+      // ===== HEADER =====
+      doc.setFillColor(30, 60, 180);
+      doc.rect(0, 0, pageWidth, 25, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(18);
+      doc.setFont(undefined, 'bold');
+      doc.text('BANK STATEMENT', pageWidth / 2, 15, { align: 'center' });
+
+      yPosition = 32;
+
+      // ===== CUSTOMER INFO =====
+      doc.setTextColor(30, 60, 180);
+      doc.setFontSize(11);
+      doc.setFont(undefined, 'bold');
+      doc.text('Customer Details', 15, yPosition);
+      yPosition += 6;
+
+      doc.setFillColor(240, 242, 247);
+      
+      doc.rect(15, yPosition - 3, pageWidth - 30, 35, 'F');
+
+      doc.setTextColor(50, 50, 50);
+      doc.setFont(undefined, 'normal');
+      doc.setFontSize(8.5);
+
+      const infoItems = [
+        `Name: ${customer?.full_name || 'N/A'}`,
+        `Account: ${customer?.account_number || 'N/A'}`,
+        `Email: ${customer?.email || 'N/A'}`,
+        `Phone: ${customer?.phone || 'N/A'}`,
+        `CNIC: ${customer?.cnic || 'N/A'}`,
+      ];
+
+      infoItems.forEach((info, index) => {
+        doc.text(info, 20, yPosition + 5 + index * 6, { maxWidth: 170 });
+      });
+
+      yPosition += 40;
+
+      // ===== STATEMENT DATE =====
+      const today = new Date();
+      const statementDate = today.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+
+      doc.setTextColor(30, 60, 180);
+      doc.setFont(undefined, 'bold');
+      doc.setFontSize(10);
+      doc.text(`Statement Generated: ${statementDate}`, 15, yPosition);
+      yPosition += 10;
+
+      // ===== TRANSACTIONS TABLE =====
+      doc.setTextColor(30, 60, 180);
+      doc.setFontSize(11);
+      doc.setFont(undefined, 'bold');
+      doc.text('Transaction Summary', 15, yPosition);
+      yPosition += 7;
+
+      // Table headers
+      const headers = ['Date', 'Type', 'Description', 'Amount', 'Status'];
+      const columnWidths = [18, 38, 45, 30, 25];
+      let xStart = 15;
+
+      // Header row
+      doc.setFillColor(70, 130, 255);
+      doc.rect(xStart, yPosition - 2, pageWidth - 30, 6.5, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFont(undefined, 'bold');
+      doc.setFontSize(8.5);
+
+      let xPos = xStart;
+      headers.forEach((header, i) => {
+        doc.text(header, xPos + columnWidths[i] / 2, yPosition + 2, {
+          align: 'center',
+          maxWidth: columnWidths[i] - 2,
+        });
+        xPos += columnWidths[i];
+      });
+
+      yPosition += 7;
+
+      // Table rows
+      doc.setTextColor(50, 50, 50);
+      doc.setFont(undefined, 'normal');
+      doc.setFontSize(8);
+
+      const totalIncoming = allTransactions
+        .filter((t) => t.direction === 'incoming')
+        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+      const totalOutgoing = allTransactions
+        .filter((t) => t.direction === 'outgoing')
+        .reduce((sum, t) => sum + parseFloat(t.amount), 0);
+
+      allTransactions.slice(0, 20).forEach((transaction, index) => {
+        if (yPosition > pageHeight - 40) {
+          doc.addPage();
+          yPosition = 15;
+        }
+
+        // Alternate row colors
+        if (index % 2 === 0) {
+          doc.setFillColor(245, 248, 252);
+          doc.rect(xStart, yPosition - 2, pageWidth - 30, 5.5, 'F');
+        }
+
+        const date = new Date(transaction.created_at).toLocaleDateString('en-US', {
+          month: 'numeric',
+          day: 'numeric',
+          year: '2-digit',
+        });
+        const type = getTransactionTypeLabel(transaction.type);
+        const description = (transaction.description || '-').substring(0, 25);
+        const amount = transaction.direction === 'incoming' ? `+$${parseFloat(transaction.amount).toFixed(2)}` : `-$${parseFloat(transaction.amount).toFixed(2)}`;
+        const status = transaction.status === 'completed' ? 'Completed' : 'Failed';
+
+        const cellValues = [date, type, description, amount, status];
+        xPos = xStart;
+
+        cellValues.forEach((value, i) => {
+          let align = 'left';
+          let offset = 2;
+          if (i === 3) { // Amount column
+            align = 'right';
+            offset = columnWidths[i] - 2;
+          } else if (i === 4) { // Status column
+            align = 'center';
+            offset = columnWidths[i] / 2;
+          }
+          doc.text(String(value), xPos + offset, yPosition + 1.5, {
+            align: align,
+            maxWidth: columnWidths[i] - 3,
+          });
+          xPos += columnWidths[i];
+        });
+
+        yPosition += 5.5;
+      });
+
+      yPosition += 5;
+
+      // ===== SUMMARY =====
+      if (yPosition > pageHeight - 35) {
+        doc.addPage();
+        yPosition = 15;
+      }
+
+      doc.setTextColor(30, 60, 180);
+      doc.setFont(undefined, 'bold');
+      doc.setFontSize(11);
+      doc.text('Account Summary', 15, yPosition);
+      yPosition += 7;
+
+      doc.setFillColor(240, 242, 247);
+      doc.rect(15, yPosition - 3, pageWidth - 30, 23, 'F');
+
+      doc.setTextColor(50, 50, 50);
+      doc.setFont(undefined, 'normal');
+      doc.setFontSize(9.5);
+
+      doc.text(`Total Incoming: +$${totalIncoming.toFixed(2)}`, 20, yPosition + 3);
+      doc.text(`Total Outgoing: -$${totalOutgoing.toFixed(2)}`, 20, yPosition + 9);
+
+      doc.setFont(undefined, 'bold');
+      doc.setTextColor(70, 130, 255);
+      doc.text(`Current Balance: $${parseFloat(customer.current_balance).toFixed(2)}`, 20, yPosition + 15);
+
+      // ===== FOOTER =====
+      const totalPages = doc.internal.pages.length - 1;
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc.setTextColor(150, 150, 150);
+        doc.setFont(undefined, 'normal');
+        doc.setFontSize(7.5);
+        doc.text(`Page ${i} of ${totalPages}`, pageWidth / 2, pageHeight - 8, {
+          align: 'center',
+        });
+      }
+
+      // Save PDF
+      const fileName = `Bank_Statement_${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}.pdf`;
+      doc.save(fileName);
+    } catch (err) {
+      console.error('Error generating PDF:', err.response?.data || err.message || err);
+      const errorMsg = err.response?.data?.message || err.message || 'Failed to generate PDF statement';
+      setError(errorMsg);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <CustomerNavbar />
       <main className="p-6 max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Transaction History</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Transaction History</h1>
+          {transactions.length > 0 && (
+            <button
+              onClick={handlePrintStatement}
+              className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold flex items-center gap-2 transition-colors"
+              title="Download bank statement as PDF"
+            >
+              📄 Print Statement
+            </button>
+          )}
+        </div>
 
         {error && (
           <div className="mb-5 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-center text-sm">
